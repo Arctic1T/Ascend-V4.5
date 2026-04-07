@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0a0614"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Turner Ascend"/>
+  <title>Turner Ascend | Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0a0614;color:#e2d9f3;font-family:'DM Mono',monospace;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;}
+    #root{min-height:100vh;}
+    input,textarea{transition:border-color 0.15s;}
+    input:focus,textarea:focus{border-color:#a855f7!important;outline:none;}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:#0a0614;}::-webkit-scrollbar-thumb{background:#2d1f47;border-radius:2px;}
+    .nt:hover{color:#c084fc!important;}.cd:hover{border-color:#a855f7!important;}.pb:hover{opacity:0.85;}.sb:hover{filter:brightness(1.1);}.evd:hover{background:#a855f710!important;border-color:#a855f755!important;}.nc:hover{border-color:#818cf8!important;}
+    details summary::-webkit-details-marker{display:none;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState, useEffect} = React;
+
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DAYS=["S","M","T","W","T","F","S"];
+const fmt=n=>n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function Card({children,style={}}){return<div style={{background:"linear-gradient(135deg,#1a0f2e,#130b24)",border:"1px solid #2d1f47",borderRadius:16,padding:"18px 20px",marginBottom:12,...style}}>{children}</div>;}
+function FL({color="#a855f7",children}){return<div style={{fontSize:10,fontWeight:700,color,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:10,fontFamily:"'DM Mono',monospace"}}>{children}</div>;}
+
+const iS={background:"#0e0820",border:"1px solid #2d1f47",borderRadius:10,color:"#e2d9f3",padding:"10px 14px",fontSize:15,fontFamily:"'DM Mono',monospace",outline:"none",width:110};
+
+function App(){
+  const today = new Date().toISOString().slice(0,10);
+  const [logs, setLogs] = useState(() => JSON.parse(localStorage.getItem("ta_logs") || "{}"));
+  const [goals, setGoals] = useState(() => JSON.parse(localStorage.getItem("ta_goals") || "[]"));
+  const [sel, setSel] = useState(today);
+  const [view, setView] = useState("calendar");
+  const [gMod, setGMod] = useState(false);
+  const [gF, setGF] = useState({label:"",amount:"",color:"#a855f7"});
+
+  useEffect(() => { localStorage.setItem("ta_logs", JSON.stringify(logs)); }, [logs]);
+  useEffect(() => { localStorage.setItem("ta_goals", JSON.stringify(goals)); }, [goals]);
+
+  const saveG = () => {
+    if(!gF.label.trim() || !gF.amount) return;
+    setGoals([...goals, {...gF}]);
+    setGMod(false);
+    setGF({label:"",amount:"",color:"#a855f7"});
+  };
+
+  const totG = goals.reduce((s,g)=>s+parseFloat(g.amount||0),0);
+
+  return(
+    <div style={{minHeight:"100vh",background:#0a0614}}>
+      {/* HEADER */}
+      <div style={{background:"linear-gradient(180deg,#130b24,#0a0614)",borderBottom:"1px solid #2d1f47",padding:"13px 16px",position:"sticky",top:0,zIndex:200,boxShadow:"0 4px 32px #a855f712"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:"0.12em",lineHeight:1}}>
+              <span style={{background:"linear-gradient(135deg,#a855f7,#e879f9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>T</span>
+              <span style={{color:"#e2d9f3"}}>URNER </span>
+              <span style={{background:"linear-gradient(135deg,#a855f7,#e879f9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>A</span>
+              <span style={{color:"#e2d9f3"}}>SCEND</span>
+            </div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:"#4b3f6b",letterSpacing:"0.18em"}}>LOCAL TEST MODE</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {["calendar","goals"].map(v=>(
+            <button key={v} className="nt" onClick={()=>setView(v)} style={{background:view===v?"#a855f722":"transparent",color:view===v?"#a855f7":"#4b3f6b",border:`1px solid ${view===v?"#a855f7":"#2d1f47"}`,borderRadius:8,padding:"5px 9px",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:"'DM Mono',monospace",letterSpacing:"0.06em"}}>
+              {v.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{maxWidth:580,margin:"0 auto",padding:"18px 14px 48px"}}>
+        {view==="calendar" && (
+          <Card>
+            <FL color="#a855f7">Daily Log: {sel}</FL>
+            <textarea 
+              style={{width:"100%", height:150, background:"#0e0820", border:"1px solid #2d1f47", borderRadius:12, color:"#e2d9f3", padding:12, fontFamily:"'DM Mono'", fontSize:14, resize:"none"}}
+              placeholder="Type your notes here..."
+              value={logs[sel]?.notes || ""}
+              onChange={(e) => setLogs({...logs, [sel]: {...(logs[sel]||{}), notes: e.target.value}})}
+            />
+          </Card>
+        )}
+
+        {view==="goals" && (
+          <div>
+            <div style={{background:"linear-gradient(135deg,#1a0728,#0e0820)",border:"1px solid #a855f733",borderRadius:18,padding:20,marginBottom:14,textAlign:"center"}}>
+              <div style={{fontSize:9,color:"#6b5f8a",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:6}}>Total Goal</div>
+              <div style={{fontFamily:"'Bebas Neue'",fontSize:42,color:"#a855f7"}}>${fmt(totG)}</div>
+            </div>
+            {goals.map((g,i)=>(
+              <Card key={i}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div><div style={{color:g.color,fontSize:14}}>{g.label}</div><div style={{fontSize:20,fontFamily:"'Bebas Neue'"}}>${fmt(parseFloat(g.amount))}</div></div>
+                <button onClick={() => setGoals(goals.filter((_, idx) => idx !== i))} style={{background:"transparent",border:"1px solid #2d1f47",color:"#f87171",padding:"4px 8px",borderRadius:6,fontSize:10, cursor:"pointer"}}>DEL</button>
+              </div></Card>
+            ))}
+            <button onClick={()=>setGMod(true)} className="sb" style={{width:"100%",background:"#1a0f2e",border:"1px dashed #a855f7",color:"#a855f7",padding:14,borderRadius:12,cursor:"pointer",fontWeight:700,fontFamily:"'DM Mono'"}}>+ ADD NEW GOAL</button>
+          </div>
+        )}
+
+        {gMod && (
+          <div style={{position:"fixed",inset:0,background:"#000000dd",display:"flex",alignItems:"center",justifyContent:"center",padding:20,zIndex:1000}}>
+            <Card style={{width:"100%",maxWidth:400}}>
+              <FL>New Goal</FL>
+              <input style={{...iS,width:"100%",marginBottom:10}} placeholder="Label" value={gF.label} onChange={e=>setGF({...gF,label:e.target.value})}/>
+              <input type="number" style={{...iS,width:"100%",marginBottom:10}} placeholder="Amount" value={gF.amount} onChange={e=>setGF({...gF,amount:e.target.value})}/>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={saveG} style={{flex:1,padding:10,background:"#a855f7",border:"none",borderRadius:8,color:"#fff",cursor:"pointer"}}>SAVE</button>
+                <button onClick={()=>setGMod(false)} style={{flex:1,padding:10,background:"#2d1f47",border:"none",borderRadius:8,color:"#fff",cursor:"pointer"}}>CANCEL</button>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
